@@ -1,9 +1,9 @@
-import express from "express";
+import express from 'express';
 
-import healthRouter from "./healthcheck.js";
+// import healthRouter from "./healthcheck.js";
 
 const router = express.Router();
 
-router.use("/healthcheck", healthRouter);
+// router.use("/healthcheck", healthRouter);
 
 export default router;

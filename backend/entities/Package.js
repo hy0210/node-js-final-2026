@@ -1,21 +1,23 @@
-import { EntitySchema } from "typeorm";
+import { EntitySchema } from 'typeorm';
 
 const Package = new EntitySchema({
-  name: "CreditPackage",
-  tableName: "PACKAGE",
+  name: 'Package',
+  tableName: 'PACKAGE',
   columns: {
     id: {
       primary: true,
-      type: "uuid",
-      generated: "uuid",
+      type: 'uuid',
+      generated: 'uuid',
       nullable: false,
     },
     name: {
-      type: "varchar",
+      type: 'varchar',
       nullable: false,
       unique: true,
     },
-    credit_amount: { type: "int", nullable: false },
-    price: { type: "int", nullable: false },
+    credit_amount: { type: 'int', nullable: false },
+    price: { type: 'int', nullable: false },
   },
 });
+
+export default Package;

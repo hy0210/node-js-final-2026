@@ -1,9 +1,19 @@
-import app from "./app.js";
+import 'dotenv/config';
+import app from './app.js';
+import AppDataSource from './db/data-source.js';
 
 const PORT = Number(process.env.PORT) || 8080;
 
-app.listen(PORT, () => {
-  console.log(`✅ Server listening on http://localhost:${PORT}`);
-  console.log(`📘 Swagger UI: http://localhost:8081`);
-  console.log("");
-});
+AppDataSource.initialize()
+  .then(() => {
+    console.log('資料庫連線成功');
+    app.listen(PORT, () => {
+      console.log(`✅ Server listening on http://localhost:${PORT}`);
+      console.log(`📘 Swagger UI: http://localhost:8081`);
+      console.log('');
+    });
+  })
+  .catch((err) => {
+    console.error('資料庫連線失敗，服務不啟動：', err.message);
+    process.exit(1);
+  });
