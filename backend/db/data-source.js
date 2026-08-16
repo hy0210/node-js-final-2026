@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import Package from '../entities/Package.js';
 import Skill from '../entities/Skill.js';
+import User from '../entities/User.js';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -12,7 +13,7 @@ const dataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'student666',
   database: process.env.DB_DATABASE || 'fitness',
 
-  entities: [Package, Skill],
+  entities: [Package, Skill, User],
 
   migrations: ['db/migrations/*.js'],
   // 將 ORM 自動同步結構關閉

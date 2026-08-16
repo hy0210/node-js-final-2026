@@ -20,6 +20,7 @@ const Skill = new EntitySchema({
       type: 'timestamp', // 欄位類型為時間戳記
       createDate: true, // 新增資料時自動填入當下時間
     },
+    deletedAt: { type: 'timestamp', deleteDate: true, nullable: true },
   },
 });
 
