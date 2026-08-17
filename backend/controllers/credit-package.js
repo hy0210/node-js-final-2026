@@ -54,7 +54,7 @@ export async function deletePackage(req, res, next) {
   try {
     const result = await packageRepo.update(
       { id: packageId },
-      { deletedAt: new Date() },
+      { deleted_at: new Date() },
     );
     if (result.affected === 0) {
       return next(createError(404, '方案不存在'));

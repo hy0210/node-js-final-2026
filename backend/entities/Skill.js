@@ -16,11 +16,11 @@ const Skill = new EntitySchema({
       nullable: false, // 不可為空
       unique: true, // 唯一
     },
-    createdAt: {
+    created_at: {
       type: 'timestamp', // 欄位類型為時間戳記
       createDate: true, // 新增資料時自動填入當下時間
     },
-    deletedAt: { type: 'timestamp', deleteDate: true, nullable: true },
+    deleted_at: { type: 'timestamp', deleteDate: true, nullable: true },
   },
 });
 

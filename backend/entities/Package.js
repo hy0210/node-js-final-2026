@@ -17,7 +17,11 @@ const Package = new EntitySchema({
     },
     credit_amount: { type: 'int', nullable: false },
     price: { type: 'int', nullable: false },
-    deletedAt: { type: 'timestamp', deleteDate: true, nullable: true },
+    created_at: {
+      type: 'timestamp',
+      createDate: true,
+    },
+    deleted_at: { type: 'timestamp', deleteDate: true, nullable: true },
   },
 });
 

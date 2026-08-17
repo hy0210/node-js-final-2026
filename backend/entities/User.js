@@ -2,7 +2,7 @@ import { EntitySchema } from 'typeorm';
 
 const User = new EntitySchema({
   name: 'User',
-  tableName: 'User',
+  tableName: 'USER',
   columns: {
     id: {
       primary: true, // 設定為主鍵
@@ -34,11 +34,11 @@ const User = new EntitySchema({
       nullable: false,
       select: false, // 預設查詢不回傳密碼
     },
-    createdAt: {
+    created_at: {
       type: 'timestamp', // 欄位類型為時間戳記
       createDate: true, // 新增資料時自動填入當下時間
     },
-    deletedAt: { type: 'timestamp', deleteDate: true, nullable: true },
+    deleted_at: { type: 'timestamp', deleteDate: true, nullable: true },
   },
 });
 
