@@ -9,8 +9,6 @@ AppDataSource.initialize()
     console.log('資料庫連線成功');
     app.listen(PORT, () => {
       console.log(`✅ Server listening on http://localhost:${PORT}`);
-      console.log(`📘 Swagger UI: http://localhost:8081`);
-      console.log('');
     });
   })
   .catch((err) => {

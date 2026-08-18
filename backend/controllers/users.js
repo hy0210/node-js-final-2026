@@ -79,6 +79,7 @@ export async function login(req, res, next) {
     return next(createError(400, '使用者不存在或密碼輸入錯誤'));
   }
   try {
+    // 塞到 req.user 中
     const userPayload = {
       id: matchedUser.id,
       role: matchedUser.role,
