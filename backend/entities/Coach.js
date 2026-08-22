@@ -18,6 +18,7 @@ const Coach = new EntitySchema({
     profile_image_url: {
       type: 'varchar',
       length: 300,
+      nullable: true,
     },
     experience_years: {
       type: 'int',

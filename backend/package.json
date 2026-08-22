@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "node --watch server.js",
+    "dev": "node --watch --watch-path=. server.js",
     "start": "node server.js",
     "migration:generate": "typeorm migration:generate ./db/migrations/InitSchema -d ./db/data-source.js -o --esm",
     "migration:run": "typeorm migration:run -d ./db/data-source.js",
