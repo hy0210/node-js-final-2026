@@ -1,14 +1,16 @@
+import { STATUS } from '../constants/status.js';
+
 function createCourseStatus(startAtStr, endAtStr) {
   const startAt = new Date(startAtStr);
   const endAt = new Date(endAtStr);
   const nowDate = new Date();
 
   if (nowDate < startAt) {
-    return '尚未開始';
+    return STATUS.NOT_STARTED;
   } else if (nowDate > startAt && nowDate < endAt) {
-    return '進行中';
+    return STATUS.IN_PROGRESS;
   } else {
-    return '已結束';
+    return STATUS.ENDED;
   }
 }
 

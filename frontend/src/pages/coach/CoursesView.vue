@@ -1,5 +1,7 @@
 <template>
-  <div class="bg-primary-900 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 py-12 md:py-16 lg:py-20">
+  <div
+    class="bg-primary-900 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8 py-12 md:py-16 lg:py-20"
+  >
     <div class="max-w-7xl mx-auto">
       <div class="mb-8 flex justify-between items-start">
         <div>
@@ -11,26 +13,26 @@
             管理您開設的所有課程
           </p>
         </div>
-      <button
-        @click="openCourseModal"
-        class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-primary-900 bg-secondary-800 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-800 transition-colors whitespace-nowrap"
-      >
-        <svg
-          class="w-4 h-4 mr-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+        <button
+          @click="openCourseModal"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-primary-900 bg-secondary-800 hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-800 transition-colors whitespace-nowrap"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        新增課程
-      </button>
-    </div>
+          <svg
+            class="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          新增課程
+        </button>
+      </div>
 
       <div
         v-if="courseList.length === 0"
@@ -53,7 +55,10 @@
         <p class="mt-1 text-lg text-primary-300">您還沒有開設任何課程</p>
       </div>
 
-      <div v-else class="bg-primary-800 rounded-lg shadow-lg overflow-hidden border border-primary-600">
+      <div
+        v-else
+        class="bg-primary-800 rounded-lg shadow-lg overflow-hidden border border-primary-600"
+      >
         <div class="hidden md:block overflow-x-auto">
           <table class="min-w-full divide-y divide-primary-600">
             <thead class="bg-primary-700">
@@ -211,114 +216,114 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from "vue";
-import {
-  getAdminCoachCourses,
-  postCourses,
-  putCourses,
-} from "../../api/index.js";
-import { formatCoachCourseDateTime } from "../../utils/formatDateTime.js";
-import CourseModal from "../../components/CourseModal.vue";
-import swalHandler from "../../utils/swalHandler.js";
+  import { ref, onMounted, getCurrentInstance } from 'vue';
+  import {
+    getAdminCoachCourses,
+    postCourses,
+    putCourses,
+  } from '../../api/index.js';
+  import { formatCoachCourseDateTime } from '../../utils/formatDateTime.js';
+  import CourseModal from '../../components/CourseModal.vue';
+  import swalHandler from '../../utils/swalHandler.js';
 
-const { proxy } = getCurrentInstance();
+  const { proxy } = getCurrentInstance();
 
-const courseList = ref([]);
-const courseModal = ref(false);
-const courseId = ref("");
+  const courseList = ref([]);
+  const courseModal = ref(false);
+  const courseId = ref('');
 
-function getStatusClass(status) {
-  const statusClasses = {
-    尚未開始: "bg-info-200 text-info-700",
-    進行中: "bg-success-200 text-success-700",
-    已結束: "bg-primary-600 text-primary-0",
-  };
-  return statusClasses[status];
-}
-
-function openCourseModal(id) {
-  if (typeof id === "string") {
-    courseId.value = id;
+  function getStatusClass(status) {
+    const statusClasses = {
+      尚未開始: 'bg-info-200 text-info-700',
+      進行中: 'bg-success-200 text-success-700',
+      已結束: 'bg-primary-600 text-primary-0',
+    };
+    return statusClasses[status];
   }
 
-  courseModal.value = true;
-}
-
-function closeCourseModal() {
-  courseId.value = "";
-  courseModal.value = false;
-}
-
-async function addCourse(courseInfo) {
-  try {
-    const { status } = await postCourses(courseInfo);
-    if (status === "success") {
-      swalHandler(proxy.$swal, "新增課程成功");
-      getCoachCourseList();
+  function openCourseModal(id) {
+    if (typeof id === 'string') {
+      courseId.value = id;
     }
-  } catch (error) {
-    let msg = error.message;
 
-    if (Object.hasOwn(error.response, "data")) {
-      const { status, message } = error.response.data;
-      msg = message;
+    courseModal.value = true;
+  }
 
-      if (status === "failed") {
-        swalHandler(proxy.$swal, message);
-        return;
+  function closeCourseModal() {
+    courseId.value = '';
+    courseModal.value = false;
+  }
+
+  async function addCourse(courseInfo) {
+    try {
+      const { status } = await postCourses(courseInfo);
+      if (status === 'success') {
+        swalHandler(proxy.$swal, '新增課程成功');
+        getCoachCourseList();
       }
-    }
+    } catch (error) {
+      let msg = error.message;
 
-    throw new Error(`[getCoachCourseList] error : ${msg}`);
-  } finally {
-    closeCourseModal();
-  }
-}
+      if (Object.hasOwn(error.response, 'data')) {
+        const { status, message } = error.response.data;
+        msg = message;
 
-async function updateCourse(courseInfo, courseId) {
-  try {
-    const { status } = await putCourses(courseInfo, courseId);
-    if (status === "success") {
-      swalHandler(proxy.$swal, "更新課程成功");
-      getCoachCourseList();
-    }
-  } catch (error) {
-    let msg = error.message;
-
-    if (Object.hasOwn(error.response, "data")) {
-      const { status, message } = error.response.data;
-      msg = message;
-
-      if (status === "failed") {
-        swalHandler(proxy.$swal, message);
-        return;
+        if (status === 'failed') {
+          swalHandler(proxy.$swal, message);
+          return;
+        }
       }
+
+      throw new Error(`[getCoachCourseList] error : ${msg}`);
+    } finally {
+      closeCourseModal();
     }
-
-    throw new Error(`[getCoachCourseList] error : ${msg}`);
-  } finally {
-    closeCourseModal();
   }
-}
 
-async function getCoachCourseList() {
-  try {
-    const { data } = await getAdminCoachCourses();
+  async function updateCourse(courseInfo, courseId) {
+    try {
+      const { status } = await putCourses(courseInfo, courseId);
+      if (status === 'success') {
+        swalHandler(proxy.$swal, '更新課程成功');
+        getCoachCourseList();
+      }
+    } catch (error) {
+      let msg = error.message;
 
-    courseList.value = data;
-  } catch (error) {
-    let msg = error.message;
+      if (Object.hasOwn(error.response, 'data')) {
+        const { status, message } = error.response.data;
+        msg = message;
 
-    if (Object.hasOwn(error.response, "data")) {
-      const { message } = error.response.data;
-      msg = message;
+        if (status === 'failed') {
+          swalHandler(proxy.$swal, message);
+          return;
+        }
+      }
+
+      throw new Error(`[getCoachCourseList] error : ${msg}`);
+    } finally {
+      closeCourseModal();
     }
-
-    throw new Error(`[getCoachCourseList] error : ${msg}`);
   }
-}
 
-onMounted(() => {
-  getCoachCourseList();
-});
+  async function getCoachCourseList() {
+    try {
+      const { data } = await getAdminCoachCourses();
+
+      courseList.value = data;
+    } catch (error) {
+      let msg = error.message;
+
+      if (Object.hasOwn(error.response, 'data')) {
+        const { message } = error.response.data;
+        msg = message;
+      }
+
+      throw new Error(`[getCoachCourseList] error : ${msg}`);
+    }
+  }
+
+  onMounted(() => {
+    getCoachCourseList();
+  });
 </script>
