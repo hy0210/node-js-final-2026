@@ -49,7 +49,7 @@ const Course = new EntitySchema({
   },
   relations: {
     user: {
-      type: 'many-to-one', // 多堂課程對應一個使用者
+      type: 'many-to-one', // 多堂課程對應一個使用者(教練)
       target: 'User',
       joinColumn: { name: 'user_id' },
     },

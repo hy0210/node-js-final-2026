@@ -5,8 +5,10 @@ import { PG_ERROR } from '../constants/pgError.js';
 import AppDataSource from '../db/data-source.js';
 import createError from '../utils/createError.js';
 import isValidPassword from '../utils/isValidPassword.js';
+import isUuid from '../utils/isUuid.js';
 
 const userRepo = AppDataSource.getRepository('User');
+const purchaseRepo = AppDataSource.getRepository('Purchase');
 
 // 身分（role）固定是 USER，註冊時無法指定身分
 export async function signUp(req, res, next) {
@@ -230,6 +232,49 @@ export async function updatePassword(req, res, next) {
     return res.status(200).json({
       status: 'success',
       data: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// 取得本人的課程方案購買紀錄
+export async function getPurchases(req, res, next) {
+  const { id } = req.user;
+
+  try {
+    const matchedPurchases = await purchaseRepo.find({
+      where: { user: { id } },
+      select: {
+        purchase_at: true,
+        package: {
+          id: true,
+          name: true,
+          credit_amount: true,
+          price: true,
+        },
+      },
+      relations: { package: true },
+      order: {
+        purchase_at: 'DESC',
+      },
+    });
+    if (matchedPurchases.length === 0) {
+      return res.status(200).json({
+        status: 'success',
+        data: [],
+      });
+    }
+
+    const data = matchedPurchases.map((purchase) => ({
+      purchase_at: purchase.purchase_at,
+      name: purchase.package.name,
+      purchased_credits: purchase.package.credit_amount,
+      price_paid: Number(purchase.package.price), // price_paid 回「數字」型別
+    }));
+    return res.status(200).json({
+      status: 'success',
+      data,
     });
   } catch (err) {
     next(err);

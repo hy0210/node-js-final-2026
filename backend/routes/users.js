@@ -10,4 +10,6 @@ router.get('/profile', auth, usersController.getProfile);
 router.put('/profile', auth, usersController.updateProfile);
 router.put('/password', auth, usersController.updatePassword);
 
+router.get('/credit-package', auth, usersController.getPurchases);
+
 export default router;

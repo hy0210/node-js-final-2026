@@ -51,7 +51,8 @@ export async function deleteSkill(req, res, next) {
     const result = await skillRepo.update(
       { id: skillId },
       { deleted_at: new Date() },
-    );
+    );const newPackage = await packageRepo.save({ name, credit_amount, price });
+    res.status(200).json({ status: 'success', data: newPackage });
     if (result.affected === 0) {
       return next(createError(404, '技能不存在'));
     }

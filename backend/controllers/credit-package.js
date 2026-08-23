@@ -4,6 +4,7 @@ import { PG_ERROR } from '../constants/pgError.js';
 import isUuid from '../utils/isUuid.js';
 
 const packageRepo = AppDataSource.getRepository('Package');
+const purchaseRepo = AppDataSource.getRepository('Purchase');
 
 export async function getPackages(req, res, next) {
   try {
@@ -60,6 +61,40 @@ export async function deletePackage(req, res, next) {
       return next(createError(404, '方案不存在'));
     }
     res.status(200).json({ status: 'success', data: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// 登入的使用者購買指定方案
+export async function purchasePackage(req, res, next) {
+  const { creditPackageId } = req.params;
+  const { id } = req.user;
+
+  if (!isUuid(creditPackageId)) {
+    return next(createError(400, 'ID錯誤'));
+  }
+
+  try {
+    const matchedPackage = await packageRepo.findOne({
+      where: { id: creditPackageId },
+    });
+
+    if (!matchedPackage) {
+      return next(createError(400, 'ID錯誤'));
+    }
+
+    // 把方案寫入使用者的紀錄中
+    const newPurchase = await purchaseRepo.save({
+      user: { id },
+      package: { id: matchedPackage.id },
+      purchase_at: new Date(),
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: null,
+    });
   } catch (err) {
     next(err);
   }
