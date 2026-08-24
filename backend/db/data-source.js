@@ -7,6 +7,7 @@ import User from '../entities/User.js';
 import Coach from '../entities/Coach.js';
 import Course from '../entities/Course.js';
 import Purchase from '../entities/Purchase.js';
+import Booking from '../entities/Booking.js';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -16,7 +17,7 @@ const dataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'student666',
   database: process.env.DB_DATABASE || 'fitness',
 
-  entities: [Package, Skill, User, Coach, Course, Purchase],
+  entities: [Package, Skill, User, Coach, Course, Purchase, Booking],
 
   migrations: ['db/migrations/*.js'],
   // 將 ORM 自動同步結構關閉
