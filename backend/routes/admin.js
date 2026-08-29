@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/coaches', auth, coach, adminController.getCoachSkills);
 router.put('/coaches', auth, coach, adminController.updateCoachDetail);
 
-// 課程列表／開課：要登入且是教練
+// 課程列表／開課／取得本人指定月份營收：要登入且是教練
 router.get('/coaches/courses', auth, coach, adminController.getCoachCourses);
 router.post(
   '/coaches/courses',
@@ -17,6 +17,7 @@ router.post(
   coach,
   adminController.createCoachCourses,
 );
+router.get('/coaches/revenue', auth, coach, adminController.getRevenue);
 
 // 單一課程：只驗登入，靠 owner-scoped 查詢隔離
 router.get('/coaches/courses/:courseId', auth, adminController.getCourseDetail);

@@ -2,13 +2,18 @@ import AppDataSource from '../db/data-source.js';
 import createError from '../utils/createError.js';
 import isUuid from '../utils/isUuid.js';
 import isValidUrl from '../utils/isValidUrl.js';
+import isMonth from '../utils/isMonth.js';
 import isNonNegativeInteger from '../utils/isNonNegativeInteger.js';
 import createCourseStatus from '../utils/createCourseStatus.js';
+import getTimeRange from '../utils/getTimeRange.js';
 import { ROLE } from '../constants/role.js';
+import { Between } from 'typeorm';
 
 const userRepo = AppDataSource.getRepository('User');
 const coachRepo = AppDataSource.getRepository('Coach');
 const courseRepo = AppDataSource.getRepository('Course');
+const bookingRepo = AppDataSource.getRepository('Booking');
+const packageRepo = AppDataSource.getRepository('Package');
 
 export async function updateUserToCoach(req, res, next) {
   const { userId } = req.params;
@@ -357,6 +362,95 @@ export async function updateCourse(req, res, next) {
     res.status(200).json({
       status: 'success',
       data,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// 取得本人指定月份營收
+export async function getRevenue(req, res, next) {
+  const { id } = req.user;
+  const { month } = req.query;
+
+  if (!isMonth(month)) {
+    return next(createError(400, '欄位未填寫正確'));
+  }
+
+  try {
+    // 教練有開過課嗎
+    const matchedCourses = await courseRepo.find({ where: { user: { id } } });
+    if (matchedCourses.length === 0) {
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          total: {
+            revenue: 0,
+            participants: 0,
+            course_count: 0,
+          },
+        },
+      });
+    }
+
+    // 教練今年這個月的報名數
+    const { start, end } = getTimeRange(month);
+
+    // 在指定月份中，由教練開的課相關的報名
+    const bookings = await bookingRepo.find({
+      where: {
+        created_at: Between(start, end),
+        course: { user: { id } }, // 教練開的課
+      },
+      relations: { user: true }, // 這邊的 user 是學員
+    });
+
+    if (bookings.length === 0) {
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          total: {
+            revenue: 0,
+            participants: 0,
+            course_count: 0,
+          },
+        },
+      });
+    }
+
+    const courseCount = bookings.length; // 該月未取消報名筆數
+
+    // 所有報名的學員 id
+    const userIds = bookings.map((booking) => booking.user.id);
+    const uniqueUser = [...new Set(userIds)];
+    const participants = uniqueUser.length; // 該月不重複的報名學員數
+
+    // 單個報名的價格 是 所有方案加總後的平均單價，不管建立時間
+    const packages = await packageRepo.find({
+      select: {
+        price: true,
+        credit_amount: true,
+      },
+    });
+    const totalPrice = packages.reduce((sum, pkg) => {
+      return sum + Number(pkg.price);
+    }, 0);
+    const totalCreditAmount = packages.reduce((sum, pkg) => {
+      return sum + Number(pkg.credit_amount);
+    }, 0);
+    const avgPrice = totalPrice / totalCreditAmount;
+
+    const revenue = Math.floor(courseCount * avgPrice);
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        total: {
+          revenue,
+          participants,
+          course_count: courseCount,
+        },
+      },
     });
   } catch (err) {
     next(err);
