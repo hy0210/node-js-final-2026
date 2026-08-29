@@ -12,4 +12,6 @@ router.put('/password', auth, usersController.updatePassword);
 
 router.get('/credit-package', auth, usersController.getPurchases);
 
+router.get('/courses', auth, usersController.getBookings);
+
 export default router;

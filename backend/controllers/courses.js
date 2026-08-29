@@ -3,10 +3,10 @@ import createError from '../utils/createError.js';
 import isUuid from '../utils/isUuid.js';
 import { STATUS } from '../constants/status.js';
 import createCourseStatus from '../utils/createCourseStatus.js';
+import getUserCreditStats from '../services/getUserCreditStats.js';
 
 const courseRepo = AppDataSource.getRepository('Course');
 const bookingRepo = AppDataSource.getRepository('Booking');
-const purchaseRepo = AppDataSource.getRepository('Purchase');
 
 // 取得全部「進行中」的課程列表
 export async function getCourses(req, res, next) {
@@ -77,41 +77,19 @@ export async function bookCourse(req, res, next) {
       return next(createError(400, 'ID錯誤'));
     }
 
-    const hasBookedByUser = await bookingRepo.findOne({
+    const matchedBooking = await bookingRepo.findOne({
       where: { course: { id: courseId }, user: { id } },
       withDeleted: true,
     });
 
-    if (hasBookedByUser) {
+    if (matchedBooking) {
       return next(createError(400, '已經報名過此課程'));
     }
 
-    // 使用者剩餘堂數 ＝「全部購買的堂數加總」−「未取消的報名數」
-    const purchases = await purchaseRepo.find({
-      where: { user: { id } },
-      relations: {
-        package: true,
-      },
-    });
+    // 剩餘堂數歸零（購買堂數加總 − 未取消報名數 ≤ 0，沒買過方案也算） → 「已無可使用堂數」
+    const { totalCredit, creditRemain } = await getUserCreditStats(id);
 
-    if (purchases.length === 0) {
-      return next(createError(400, '已無可使用堂數'));
-    }
-
-    const purchasedPackages = purchases.map((p) => p.package);
-    const totalCreditCount = purchasedPackages.reduce((accum, cur) => {
-      return accum + Number(cur.credit_amount);
-    }, 0);
-
-    const userBookings = await bookingRepo.find({ where: { user: { id } } });
-
-    const validBookingCount = userBookings.filter(
-      (booking) => booking.cancelled_at === null,
-    ).length;
-
-    const remainCount = totalCreditCount - validBookingCount;
-
-    if (remainCount <= 0) {
+    if (totalCredit === 0 || creditRemain <= 0) {
       return next(createError(400, '已無可使用堂數'));
     }
 
@@ -126,12 +104,66 @@ export async function bookCourse(req, res, next) {
       return next(createError(400, '已達最大參加人數，無法參加'));
     }
 
-    const newBooking = await bookingRepo.save({
+    // 新增到報名紀錄中
+    await bookingRepo.save({
       user: { id },
       course: { id: courseId },
     });
 
     res.status(201).json({
+      status: 'success',
+      data: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// 取消課程報名（軟刪除）
+export async function cancelBooking(req, res, next) {
+  const { courseId } = req.params;
+  const { id } = req.user;
+
+  if (!isUuid(courseId)) {
+    return next(createError(400, 'ID錯誤'));
+  }
+  try {
+    // 課程不存在、從未報名過、已經取消過——三種情況都回同一句「ID錯誤」。
+    // 1. 課程不存在
+    const matchedCourse = await courseRepo.findOne({
+      where: { id: courseId },
+    });
+
+    if (!matchedCourse) {
+      return next(createError(400, 'ID錯誤'));
+    }
+
+    // 2. 從未報名過
+    const matchedBooking = await bookingRepo.findOne({
+      where: { course: { id: courseId }, user: { id } },
+      withDeleted: true,
+    });
+
+    if (!matchedBooking) {
+      return next(createError(400, 'ID錯誤'));
+    }
+
+    // 3. 已經取消過
+    if (matchedBooking && matchedBooking.cancelled_at !== null) {
+      return next(createError(400, 'ID錯誤'));
+    }
+
+    // 標記取消沒成功會回 400「取消失敗」
+    const result = await bookingRepo.softDelete({
+      course: { id: courseId },
+      user: { id },
+    });
+
+    if (result.affected === 0) {
+      return next(createError(400, '取消失敗'));
+    }
+
+    res.status(200).json({
       status: 'success',
       data: null,
     });

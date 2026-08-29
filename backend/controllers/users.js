@@ -6,9 +6,12 @@ import AppDataSource from '../db/data-source.js';
 import createError from '../utils/createError.js';
 import isValidPassword from '../utils/isValidPassword.js';
 import isUuid from '../utils/isUuid.js';
+import getUserCreditStats from '../services/getUserCreditStats.js';
+import Course from '../entities/Course.js';
 
 const userRepo = AppDataSource.getRepository('User');
 const purchaseRepo = AppDataSource.getRepository('Purchase');
+const bookingRepo = AppDataSource.getRepository('Booking');
 
 // 身分（role）固定是 USER，註冊時無法指定身分
 export async function signUp(req, res, next) {
@@ -275,6 +278,44 @@ export async function getPurchases(req, res, next) {
     return res.status(200).json({
       status: 'success',
       data,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// 取得報名過的課程清單
+export async function getBookings(req, res, next) {
+  const { id } = req.user;
+
+  try {
+    const { creditUsage, creditRemain } = await getUserCreditStats(id);
+
+    const bookings = await bookingRepo.find({
+      where: { user: { id } },
+      relations: { course: { user: true } }, // Booking → Course → User
+      withDeleted: true, // 不排除軟刪除
+      order: { course: { start_at: 'ASC' } },
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        credit_remain: creditRemain,
+        credit_usage: creditUsage,
+        course_booking:
+          bookings.length === 0
+            ? []
+            : bookings.map((booking) => ({
+                cancelled_at: booking.cancelled_at,
+                course_id: booking.course.id,
+                name: booking.course.name,
+                start_at: booking.course.start_at,
+                end_at: booking.course.end_at,
+                meeting_url: booking.course.meeting_url,
+                coach_name: booking.course.user.name,
+              })),
+      },
     });
   } catch (err) {
     next(err);

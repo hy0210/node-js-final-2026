@@ -8,4 +8,6 @@ router.get('/', coursesController.getCourses);
 
 router.post('/:courseId', auth, coursesController.bookCourse);
 
+router.delete('/:courseId', auth, coursesController.cancelBooking);
+
 export default router;
