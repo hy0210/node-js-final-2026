@@ -7,6 +7,7 @@ import isNonNegativeInteger from '../utils/isNonNegativeInteger.js';
 import createCourseStatus from '../utils/createCourseStatus.js';
 import getTimeRange from '../utils/getTimeRange.js';
 import { ROLE } from '../constants/role.js';
+import { EMPTY_REVENUE_DATA } from '../constants/revenue.js';
 import { Between } from 'typeorm';
 
 const userRepo = AppDataSource.getRepository('User');
@@ -383,13 +384,7 @@ export async function getRevenue(req, res, next) {
     if (matchedCourses.length === 0) {
       return res.status(200).json({
         status: 'success',
-        data: {
-          total: {
-            revenue: 0,
-            participants: 0,
-            course_count: 0,
-          },
-        },
+        data: EMPTY_REVENUE_DATA,
       });
     }
 
@@ -408,17 +403,11 @@ export async function getRevenue(req, res, next) {
     if (bookings.length === 0) {
       return res.status(200).json({
         status: 'success',
-        data: {
-          total: {
-            revenue: 0,
-            participants: 0,
-            course_count: 0,
-          },
-        },
+        data: EMPTY_REVENUE_DATA,
       });
     }
 
-    const courseCount = bookings.length; // 該月未取消報名筆數
+    const bookingCount = bookings.length; // 該月未取消報名筆數
 
     // 所有報名的學員 id
     const userIds = bookings.map((booking) => booking.user.id);
@@ -438,9 +427,11 @@ export async function getRevenue(req, res, next) {
     const totalCreditAmount = packages.reduce((sum, pkg) => {
       return sum + Number(pkg.credit_amount);
     }, 0);
-    const avgPrice = totalPrice / totalCreditAmount;
 
-    const revenue = Math.floor(courseCount * avgPrice);
+    const avgPrice =
+      totalCreditAmount !== 0 ? totalPrice / totalCreditAmount : 0;
+
+    const revenue = Math.floor(bookingCount * avgPrice);
 
     return res.status(200).json({
       status: 'success',
@@ -448,7 +439,7 @@ export async function getRevenue(req, res, next) {
         total: {
           revenue,
           participants,
-          course_count: courseCount,
+          course_count: bookingCount,
         },
       },
     });

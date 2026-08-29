@@ -18,7 +18,7 @@ const MONTH_INDEX_MAP = {
  * @param {string} month - 英文小寫月份名（january ~ december）
  * @returns {{ start: Date, end: Date }} 包含 start 和 end Date 物件的物件
  */
-export default function getYearRange(month) {
+export default function getTimeRange(month) {
   const targetYear = new Date().getFullYear();
   const monthIndex = MONTH_INDEX_MAP[month];
 

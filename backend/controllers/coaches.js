@@ -48,15 +48,19 @@ export async function deleteSkill(req, res, next) {
   }
 
   try {
-    const result = await skillRepo.update(
-      { id: skillId },
-      { deleted_at: new Date() },
-    );const newPackage = await packageRepo.save({ name, credit_amount, price });
-    res.status(200).json({ status: 'success', data: newPackage });
+    const result = await skillRepo.softDelete({
+      id: skillId,
+    });
     if (result.affected === 0) {
-      return next(createError(404, '技能不存在'));
+      return next(createError(400, '刪除失敗'));
     }
-    res.status(200).json({ status: 'success', data: null });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        raw: [],
+        affected: 1,
+      },
+    });
   } catch (err) {
     next(err);
   }
